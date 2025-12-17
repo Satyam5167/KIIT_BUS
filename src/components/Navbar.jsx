@@ -6,7 +6,6 @@ export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   const navItems = [
-    /*{ label: 'Dashboard', path: '/' },*/
     { label: 'Show Buses', path: '/' },
     { label: 'Live Tracking', path: '/live-tracking' },
     { label: 'Routes', path: '/routes' },
@@ -20,6 +19,7 @@ export default function Navbar() {
     <nav className="fixed top-0 left-0 right-0 bg-white border-b border-slate shadow-sm z-50">
       <div className="max-w-7xl mx-auto px-6 py-4">
         <div className="flex items-center justify-between">
+          {/* LOGO */}
           <Link to="/" className="flex items-center gap-3">
             <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
               <svg className="w-6 h-6 text-dark" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -31,6 +31,7 @@ export default function Navbar() {
             <span className="text-xl font-bold text-dark">KiitBus</span>
           </Link>
 
+          {/* DESKTOP MENU */}
           <div className="hidden md:flex items-center gap-8">
             {navItems.map((item) => (
               <Link
@@ -45,12 +46,26 @@ export default function Navbar() {
                 {item.label}
               </Link>
             ))}
+
+            {/* ADMIN LINK */}
+            <Link
+              to="/admin/login"
+              className={`font-semibold px-4 py-2 rounded-lg transition-colors ${
+                location.pathname.startsWith('/admin')
+                  ? 'bg-primary text-dark'
+                  : 'text-primary hover:bg-yellow-100'
+              }`}
+            >
+              Admin Portal
+            </Link>
           </div>
 
+          {/* RIGHT ICONS */}
           <div className="flex items-center gap-4">
-            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-yellow-300 flex items-center justify-center font-bold text-dark cursor-pointer hover:shadow-md transition-shadow">
+            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-yellow-300 flex items-center justify-center font-bold text-dark cursor-pointer">
               KB
             </div>
+
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               className="md:hidden p-2 hover:bg-gray-100 rounded-lg"
@@ -62,6 +77,7 @@ export default function Navbar() {
           </div>
         </div>
 
+        {/* MOBILE MENU */}
         {mobileMenuOpen && (
           <div className="md:hidden mt-4 pb-4 space-y-2 border-t border-slate">
             {navItems.map((item) => (
@@ -69,7 +85,7 @@ export default function Navbar() {
                 key={item.path}
                 to={item.path}
                 onClick={() => setMobileMenuOpen(false)}
-                className={`block px-4 py-2 rounded-lg transition-colors ${
+                className={`block px-4 py-2 rounded-lg ${
                   isActive(item.path)
                     ? 'bg-primary text-dark font-semibold'
                     : 'text-gray-600 hover:bg-gray-100'
@@ -78,6 +94,21 @@ export default function Navbar() {
                 {item.label}
               </Link>
             ))}
+
+            {/* MOBILE ADMIN LINK */}
+            <Link to="/admin/login"
+  className={`font-bold px-5 py-2 rounded-lg transition-all duration-200
+    ${
+      location.pathname.startsWith('/admin')
+        ? 'bg-gradient-to-r from-red-600 to-orange-500 text-white shadow-lg ring-2 ring-red-400'
+        : 'bg-gradient-to-r from-primary to-yellow-400 text-dark hover:shadow-lg hover:scale-105'
+    }
+  `}
+>
+  Admin Portal
+</Link>
+
+
           </div>
         )}
       </div>
