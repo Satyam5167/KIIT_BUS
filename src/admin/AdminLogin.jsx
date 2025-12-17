@@ -1,20 +1,40 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { replace, useNavigate } from 'react-router-dom'
+import API_BASE from '../apiBase'
 
 export default function AdminLogin() {
   const navigate = useNavigate()
   const [formData, setFormData] = useState({
     email: '',
-    password: '',
+    password: ''
   })
   const [error, setError] = useState('')
 
-  const handleSubmit = (e) => {
-  e.preventDefault()
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    setError('')
 
-  localStorage.setItem('isAdmin', 'true')
-  navigate('/admin')
-}
+    try {
+      const res = await fetch(`${API_BASE}/auth/login`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(formData)
+      })
+
+      const data = await res.json()
+
+      if (res.ok) {
+        navigate('/admin', { replace: true })
+      } else {
+        setError(data.message || 'Failed to Authenticate')
+      }
+    } catch (err) {
+      setError('Network error. Please try again.')
+    }
+  }
 
 
   return (
