@@ -5,34 +5,45 @@ import StatCard from "../components/StatCard";
 import API_BASE from "../apiBase";
 
 export default function AdminDashboard() {
-  // State to store active bus count from backend
-  const [activeBuses, setActiveBuses] = useState(0);
+  // Stores aggregated bus status counts
+  const [busStats, setBusStats] = useState({
+    active_buses: 0,
+    idle_buses: 0,
+    maintenance_buses: 0,
+  });
 
-  // Fetch active buses count from backend
-  const fetchActiveBuses = async () => {
+  // Fetch bus counts grouped by status
+  const fetchBusStats = async () => {
     try {
-      const res = await fetch(`${API_BASE}/admin/getTotalActiveBuses`, {
-        credentials: "include", // required for cookie-based auth
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
+      const res = await fetch(
+        `${API_BASE}/admin/getTotalActiveIdleMaintenanceBuses`,
+        {
+          credentials: "include",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
       if (!res.ok) {
         throw new Error(`Failed with status ${res.status}`);
       }
 
       const data = await res.json();
-      setActiveBuses(data.count);
+      setBusStats(data);
     } catch (err) {
-      console.error("Failed to fetch active buses:", err.message);
-      setActiveBuses(0); // safe fallback
+      console.error("Failed to fetch bus stats:", err.message);
+      setBusStats({
+        active_buses: 0,
+        idle_buses: 0,
+        maintenance_buses: 0,
+      });
     }
   };
 
-  // Fetch data when dashboard loads
+  // Load dashboard metrics on mount
   useEffect(() => {
-    fetchActiveBuses();
+    fetchBusStats();
   }, []);
 
   return (
@@ -54,13 +65,29 @@ export default function AdminDashboard() {
       {/* Stats */}
       <div className="max-w-7xl mx-auto px-6 py-12">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-10">
-          {/* Active buses now comes from backend */}
-          <StatCard title="Active Buses" value={activeBuses} badge="LIVE" />
+          <StatCard
+            title="Active Buses"
+            value={busStats.active_buses}
+            badge="LIVE"
+          />
 
-          {/* Static placeholders for now */}
-          <StatCard title="Students Waiting" value="246" badge="NOW" />
-          <StatCard title="Overcrowded Hostels" value="3" badge="ALERT" />
-          <StatCard title="Idle Vehicles" value="4" />
+          <StatCard
+            title="Idle Buses"
+            value={busStats.idle_buses}
+          />
+
+          <StatCard
+            title="Maintenance"
+            value={busStats.maintenance_buses}
+            badge="ALERT"
+          />
+
+          {/* Placeholder until API is available */}
+          <StatCard
+            title="Students Waiting"
+            value="246"
+            badge="NOW"
+          />
         </div>
 
         {/* Live Map + ML Suggestions */}
