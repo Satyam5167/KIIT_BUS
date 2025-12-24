@@ -50,7 +50,7 @@ export default function Drivers() {
                 <th className="px-6 py-4 text-sm text-gray-600">Driver</th>
                 <th className="px-6 py-4 text-sm text-gray-600">Phone</th>
                 <th className="px-6 py-4 text-sm text-gray-600">Vehicle</th>
-                <th className="px-6 py-4 text-sm text-gray-600">Status</th>
+                <th className="px-6 py-4 text-sm text-gray-600">Driver's Status</th>
               </tr>
             </thead>
 
@@ -71,11 +71,18 @@ export default function Drivers() {
 
                   {/* Backend sends boolean status (b.active) */}
                   <td
-                    className={`px-6 py-4 font-semibold ${
-                      d.status ? "text-green-600" : "text-red-600"
-                    }`}
+                    className={`px-6 py-4 font-semibold ${d.status === "active"
+                        ? "text-green-600"
+                        : d.status === "idle"
+                          ? "text-yellow-600"
+                          : "text-red-600"
+                      }`}
                   >
-                    {d.status ? "Active" : "Inactive"}
+                    {d.status === "active"
+                      ? "Active"
+                      : d.status === "idle"
+                        ? "Idle"
+                        : "Maintenance"}
                   </td>
                 </tr>
               ))}
