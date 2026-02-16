@@ -1,10 +1,15 @@
 import { useEffect, useState } from "react";
+import { motion } from "framer-motion";
+import { MapPin, Navigation, Bus, Clock, Search } from "lucide-react";
 import API_BASE from "../apiBase";
+import Button from "../components/ui/Button";
+import Card from "../components/ui/Card";
 
 export default function SelectRoute() {
   const [pickup, setPickup] = useState("");
   const [destination, setDestination] = useState("");
   const [showResults, setShowResults] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const [stops, setStops] = useState([]);
   const [buses, setBuses] = useState([]);
@@ -28,6 +33,7 @@ export default function SelectRoute() {
   const handleSearch = async (e) => {
     e.preventDefault();
     if (!pickup || !destination) return;
+    setLoading(true);
 
     try {
       const res = await fetch(`${API_BASE}/getBusesForRoutes`, {
@@ -46,40 +52,44 @@ export default function SelectRoute() {
       console.error("Failed to fetch buses:", err);
       setBuses([]);
       setShowResults(true);
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 py-12">
+    <div className="min-h-[calc(100vh-3.5rem)] md:min-h-[calc(100vh-4rem)] pb-20 md:pb-8 bg-slate-50 relative">
+      {/* Header Decor */}
+      <div className="h-48 bg-primary rounded-b-[40px] absolute top-0 inset-x-0 overflow-hidden">
+        <div className="absolute top-[-50%] left-[-20%] w-[60%] h-[200%] bg-white/10 rounded-full blur-3xl rotate-12" />
+        <div className="absolute bottom-[-20%] right-[-10%] w-[40%] h-[150%] bg-white/5 rounded-full blur-3xl -rotate-12" />
+      </div>
 
-      {/* HERO */}
-      <section className="bg-gradient-to-r from-dark to-gray-800 text-white py-16">
-        <div className="max-w-7xl mx-auto px-6">
-          <h1 className="text-4xl font-bold mb-2">Welcome to KiitBus</h1>
-          <p className="text-gray-300 text-lg">
-            Check live bus availability & ETAs across campus
-          </p>
+      <div className="max-w-3xl mx-auto px-4 pt-6 relative z-10 w-full">
+
+        {/* Welcome Text */}
+        <div className="text-white mb-8 text-center md:text-left">
+          <h1 className="text-3xl font-bold mb-2">Find your ride</h1>
+          <p className="opacity-90">Where are you going today?</p>
         </div>
-      </section>
-
-      <div className="max-w-7xl mx-auto px-6">
 
         {/* SEARCH CARD */}
-        <div className="relative bg-white rounded-2xl shadow-lg p-10 mb-10 animate-fade-in">
-          <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-primary via-yellow-400 to-orange-400"></div>
-
-          <h2 className="text-3xl font-bold text-dark mb-8">
-            See Available Buses
-          </h2>
-
-          <form onSubmit={handleSearch}>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <Card className="mb-8 !p-6 shadow-xl border-0">
+          <form onSubmit={handleSearch} className="space-y-4">
+            <div className="relative pl-8 space-y-4">
+              {/* Decor Line */}
+              <div className="absolute left-3 top-3 bottom-10 w-0.5 bg-slate-200">
+                <div className="absolute -top-1 -left-[5px] w-3 h-3 rounded-full border-2 border-slate-300 bg-white" />
+                <div className="absolute -bottom-1 -left-[5px] w-3 h-3 rounded-full bg-primary ring-4 ring-primary/20" />
+              </div>
 
               <SelectBox
                 label="Pickup Location"
                 value={pickup}
                 onChange={setPickup}
                 options={stops}
+                placeholder="Current Location"
+                icon={MapPin}
               />
 
               <SelectBox
@@ -87,77 +97,73 @@ export default function SelectRoute() {
                 value={destination}
                 onChange={setDestination}
                 options={stops}
+                placeholder="Where to?"
+                icon={Navigation}
               />
-
-              <div className="flex items-end">
-                <button
-                  type="submit"
-                  className="w-full bg-gradient-to-r from-primary to-yellow-400
-                             text-dark font-bold px-6 py-4 rounded-xl
-                             hover:scale-[1.02] active:scale-[0.97]
-                             transition-transform duration-200 shadow-md hover:shadow-lg"
-                >
-                  Show Buses
-                </button>
-              </div>
             </div>
+
+            <Button
+              type="submit"
+              variant="primary"
+              className="w-full py-4 text-lg font-bold shadow-lg shadow-blue-500/30 mt-4"
+              isLoading={loading}
+            >
+              Search Buses
+            </Button>
           </form>
-        </div>
+        </Card>
 
         {/* RESULTS */}
         {showResults && (
-          <div className="space-y-6 animate-fade-in">
-            <h2 className="text-2xl font-bold text-dark mb-4">
-              Available Buses
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="space-y-4"
+          >
+            <h2 className="text-lg font-bold text-slate-800 px-1">
+              Available Buses <span className="text-slate-400 text-sm font-normal">({buses.length})</span>
             </h2>
 
-            {buses.map((bus) => (
-              <div
-                key={bus.bus_id}
-                className="bg-white rounded-2xl shadow-md p-6 hover:shadow-lg transition"
-              >
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-6 items-center">
-
-                  <div>
-                    <p className="text-sm text-gray-600">Bus Number</p>
-                    <p className="text-2xl font-bold text-dark">
-                      {bus.bus_code}
-                    </p>
+            {buses.length > 0 ? (
+              buses.map((bus, idx) => (
+                <Card
+                  key={bus.bus_id}
+                  className="!p-4 active:scale-[0.98] transition-transform cursor-pointer border shadow-sm hover:shadow-md hover:border-primary/30"
+                  delay={idx * 0.1}
+                >
+                  <div className="flex justify-between items-center mb-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 bg-slate-100 rounded-xl flex items-center justify-center text-slate-600">
+                        <Bus size={24} />
+                      </div>
+                      <div>
+                        <h3 className="font-bold text-lg text-secondary">{bus.bus_code}</h3>
+                        <p className="text-xs text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full inline-block">AC Seater</p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-xs text-slate-500 uppercase font-semibold">ETA</p>
+                      <p className="text-xl font-bold text-emerald-600 flex items-center gap-1">
+                        <Clock size={16} />
+                        {bus.eta_minutes} <span className="text-xs text-slate-400 font-normal">min</span>
+                      </p>
+                    </div>
                   </div>
 
-                  <div>
-                    <p className="text-sm text-gray-600">Estimated Arrival</p>
-                    <p className="text-xl font-semibold text-primary">
-                      {bus.eta_minutes} min
-                    </p>
-                  </div>
-
-                  <div className="md:col-span-2">
-                    <button
-                      className="w-full bg-primary text-dark font-semibold px-6 py-3
-                                 rounded-xl hover:bg-yellow-400 transition-colors"
-                    >
-                      Track Live
-                    </button>
-                  </div>
+                  <Button variant="outline" className="w-full border-primary/20 text-primary hover:bg-primary/5">
+                    Track Live Location
+                  </Button>
+                </Card>
+              ))
+            ) : (
+              <div className="text-center py-12 bg-white rounded-2xl border border-dashed border-slate-300">
+                <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-3 text-slate-400">
+                  <Bus size={30} />
                 </div>
-              </div>
-            ))}
-
-            {buses.length === 0 && (
-              <div className="bg-white rounded-2xl shadow-md p-10 text-center text-gray-600">
-                No buses available for the selected route
+                <p className="text-slate-500 font-medium">No buses found for this route.</p>
               </div>
             )}
-          </div>
-        )}
-
-        {!showResults && (
-          <div className="bg-white rounded-2xl shadow-md p-12 text-center animate-fade-in">
-            <p className="text-gray-600 text-lg">
-              Select pickup and destination to see available buses
-            </p>
-          </div>
+          </motion.div>
         )}
       </div>
     </div>
@@ -166,26 +172,32 @@ export default function SelectRoute() {
 
 /* ---------- Helper Components ---------- */
 
-function SelectBox({ label, value, onChange, options }) {
+function SelectBox({ label, value, onChange, options, placeholder, icon: Icon }) {
   return (
-    <div className="group">
-      <label className="block text-sm font-semibold text-dark mb-2">
-        {label}
-      </label>
-      <select
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className="w-full px-4 py-3 border border-slate rounded-xl
-                   focus:outline-none focus:ring-2 focus:ring-primary
-                   transition-all duration-200 group-hover:border-primary"
-      >
-        <option value="">Select</option>
-        {options.map((s) => (
-          <option key={s.id} value={s.id}>
-            {s.name}
-          </option>
-        ))}
-      </select>
+    <div className="relative group">
+      {Icon && (
+        <div className="absolute left-0 top-1/2 -translate-y-1/2 -ml-8 text-slate-400 z-10 bg-white">
+          {/* Icon placeholder if needed outside, but distinct styling used above */}
+        </div>
+      )}
+      <div className="relative">
+        <select
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          className="w-full bg-slate-50 border-none rounded-xl px-4 py-4 pr-10 text-slate-800 font-medium
+                       focus:ring-2 focus:ring-primary/20 focus:bg-white transition-all appearance-none cursor-pointer"
+        >
+          <option value="" disabled>{placeholder}</option>
+          {options.map((s) => (
+            <option key={s.id} value={s.id}>
+              {s.name}
+            </option>
+          ))}
+        </select>
+        <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+          <Search size={18} />
+        </div>
+      </div>
     </div>
   );
 }

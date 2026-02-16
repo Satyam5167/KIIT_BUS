@@ -1,4 +1,8 @@
 import { useState } from 'react'
+import { Phone, Mail, MessageCircle, Send } from 'lucide-react'
+import Card from '../components/ui/Card'
+import Button from '../components/ui/Button'
+import Input from '../components/ui/Input'
 
 export default function Support() {
   const [formData, setFormData] = useState({
@@ -8,6 +12,7 @@ export default function Support() {
     message: '',
   })
 
+  const [loading, setLoading] = useState(false)
   const [submitted, setSubmitted] = useState(false)
 
   const handleChange = (e) => {
@@ -17,199 +22,101 @@ export default function Support() {
 
   const handleSubmit = (e) => {
     e.preventDefault()
-    setSubmitted(true)
+    setLoading(true)
 
+    // Simulate API call
     setTimeout(() => {
-      setSubmitted(false)
-      setFormData({
-        name: '',
-        email: '',
-        subject: '',
-        message: '',
-      })
-    }, 3000)
+      setLoading(false)
+      setSubmitted(true)
+      setFormData({ name: '', email: '', subject: '', message: '' })
+      setTimeout(() => setSubmitted(false), 3000)
+    }, 1500)
   }
 
-  const faqs = [
-    {
-      question: 'How do I book a ride?',
-      answer: 'Navigate to the "Book Ride" section, select your pickup location and destination, and choose your preferred bus.',
-    },
-    {
-      question: 'Can I track my bus in real-time?',
-      answer: 'Yes, use the Live Tracking page to see bus locations and ETAs.',
-    },
-    {
-      question: 'How can I cancel my booking?',
-      answer: 'You can cancel from the Dashboard within 15 minutes of departure.',
-    },
-    {
-      question: 'What are peak hours?',
-      answer: 'Typically 7–9 AM and 5–7 PM on weekdays.',
-    },
+  const sections = [
+    { icon: Phone, title: "Phone Support", value: "+91 98765 43210", sub: "Available 24/7" },
+    { icon: Mail, title: "Email Us", value: "transport@kiit.ac.in", sub: "Response < 2 hours" },
+    { icon: MessageCircle, title: "Live Chat", value: "Chat Now", sub: "Mon-Fri, 9am - 5pm" }
   ]
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 py-14">
-      <div className="max-w-7xl mx-auto px-6">
-
-        {/* HEADER */}
-        <div className="mb-12 text-center">
-          <h1 className="text-4xl font-bold text-dark mb-3">Support & Help</h1>
-          <p className="text-gray-600 text-lg">
-            We’re here to help you with anything related to KiitBus
-          </p>
+    <div className="min-h-screen bg-slate-50 py-12 px-4 md:px-8 pb-24">
+      <div className="max-w-6xl mx-auto">
+        <div className="text-center mb-12">
+          <h1 className="text-3xl font-bold text-secondary mb-2">How can we help?</h1>
+          <p className="text-slate-500 max-w-lg mx-auto">Get in touch with our transport team for any queries, lost items, or general assistance.</p>
         </div>
 
-        {/* CONTACT OPTIONS */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-14">
-          <SupportCard title="Phone Support" value="+91 98765 43210" note="24/7 Available" />
-          <SupportCard title="Email Support" value="transport@kiit.ac.in" note="Response in 2 hrs" />
-          <SupportCard title="Live Chat" value="In-App Chat" note="7 AM – 9 PM" />
+        <div className="grid md:grid-cols-3 gap-6 mb-12">
+          {sections.map((s, i) => (
+            <Card key={i} className="text-center !p-8 border-0 shadow-lg shadow-slate-200/50" hover delay={i * 0.1}>
+              <div className="w-16 h-16 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                <s.icon size={28} />
+              </div>
+              <h3 className="font-bold text-secondary mb-1">{s.title}</h3>
+              <p className="text-primary font-bold text-lg mb-1">{s.value}</p>
+              <p className="text-xs text-slate-400 font-medium uppercase tracking-wider">{s.sub}</p>
+            </Card>
+          ))}
         </div>
 
-        {/* FORM + FAQ */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
-
-          {/* FORM CARD */}
-          <div className="relative bg-white rounded-2xl shadow-lg p-10 overflow-hidden">
-
-            {/* Gradient top bar */}
-            <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-primary via-yellow-400 to-orange-400"></div>
-
-            <h2 className="text-2xl font-bold text-dark mb-6">
-              Send us a Message
-            </h2>
-
-            {/* SUCCESS */}
-            {submitted && (
-              <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-xl flex gap-3 animate-fade-in">
-                <div className="w-9 h-9 bg-green-100 rounded-full flex items-center justify-center animate-bounce">
-                  ✅
-                </div>
-                <div>
-                  <p className="font-semibold text-green-900">
-                    Message sent successfully!
-                  </p>
-                  <p className="text-sm text-green-700">
-                    Our support team will contact you shortly.
-                  </p>
-                </div>
-              </div>
-            )}
-
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <AnimatedInput
-                label="Name"
-                name="name"
-                value={formData.name}
-                onChange={handleChange}
-                placeholder="Your name"
-                required
-              />
-
-              <AnimatedInput
-                label="Email"
-                name="email"
-                type="email"
-                value={formData.email}
-                onChange={handleChange}
-                placeholder="your.email@kiit.ac.in"
-                required
-              />
-
-              <AnimatedInput
-                label="Subject"
-                name="subject"
-                value={formData.subject}
-                onChange={handleChange}
-                placeholder="How can we help?"
-                required
-              />
-
-              <div>
-                <label className="block text-sm font-semibold text-dark mb-2">
-                  Message
-                </label>
-                <textarea
-                  name="message"
-                  value={formData.message}
-                  onChange={handleChange}
-                  rows="5"
-                  required
-                  className="w-full px-4 py-3 border border-slate rounded-xl resize-none
-                             focus:outline-none focus:ring-2 focus:ring-primary
-                             transition-all duration-200 hover:border-primary"
-                  placeholder="Describe your issue..."
-                />
-              </div>
-
-              <button
-                type="submit"
-                className="w-full bg-gradient-to-r from-primary to-yellow-400
-                           text-dark font-bold px-6 py-4 rounded-xl
-                           hover:scale-[1.02] active:scale-[0.97]
-                           transition-transform duration-200 shadow-md hover:shadow-lg"
-              >
-                Send Message
-              </button>
-            </form>
-          </div>
-
-          {/* FAQ */}
-          <div>
-            <h2 className="text-2xl font-bold text-dark mb-6">
-              Frequently Asked Questions
-            </h2>
-
-            <div className="space-y-4">
-              {faqs.map((faq, idx) => (
-                <div
-                  key={idx}
-                  className="bg-white rounded-xl shadow-md p-5 border-l-4 border-primary hover:shadow-lg transition"
-                >
-                  <h4 className="font-semibold text-dark mb-2">
-                    {faq.question}
-                  </h4>
-                  <p className="text-sm text-gray-600">
-                    {faq.answer}
-                  </p>
-                </div>
-              ))}
+        <div className="grid lg:grid-cols-2 gap-10">
+          {/* Contact Form */}
+          <Card className="!p-8 border-0 shadow-xl shadow-slate-200/50">
+            <div className="mb-6">
+              <h3 className="text-xl font-bold text-secondary">Send a Message</h3>
+              <p className="text-slate-500 text-sm">We usually respond within a few hours.</p>
             </div>
-          </div>
 
+            {submitted ? (
+              <div className="bg-emerald-50 text-emerald-800 p-6 rounded-xl flex items-center gap-4">
+                <div className="bg-white p-2 rounded-full shadow-sm"><Send size={20} /></div>
+                <div>
+                  <p className="font-bold">Message Sent!</p>
+                  <p className="text-sm">We'll get back to you shortly.</p>
+                </div>
+              </div>
+            ) : (
+              <form onSubmit={handleSubmit} className="space-y-5">
+                <div className="grid md:grid-cols-2 gap-5">
+                  <Input label="Name" name="name" value={formData.name} onChange={handleChange} required placeholder="Name" />
+                  <Input label="Email" name="email" value={formData.email} onChange={handleChange} required placeholder="Email" type="email" />
+                </div>
+                <Input label="Subject" name="subject" value={formData.subject} onChange={handleChange} required placeholder="Topic of inquiry" />
+                <div>
+                  <label className="block text-sm font-bold text-secondary mb-2">Message</label>
+                  <textarea
+                    name="message"
+                    value={formData.message}
+                    onChange={handleChange}
+                    rows="4"
+                    required
+                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-secondary font-medium resize-none"
+                    placeholder="How can we help you today?"
+                  />
+                </div>
+                <Button type="submit" variant="primary" className="w-full" isLoading={loading} icon={Send}>Send Message</Button>
+              </form>
+            )}
+          </Card>
+
+          {/* FAQ Preview */}
+          <div className="space-y-4">
+            <h3 className="text-xl font-bold text-secondary px-2">Common Questions</h3>
+            {[
+              { q: "How do I see live bus location?", a: "Go to the 'Live Tracking' tab and select your route number." },
+              { q: "Can I book a seat in advance?", a: "Yes, use the 'Select Route' page to find and book available seats up to 24h in advance." },
+              { q: "What if I lose something on the bus?", a: "Please file a 'Lost and Found' report in the Complaints section or contact us immediately." },
+              { q: "Are the timings accurate?", a: "Bus timings are updated daily. Live tracking provides the most accurate real-time ETA." }
+            ].map((item, idx) => (
+              <Card key={idx} className="!p-5 border-l-4 border-l-primary/20 hover:border-l-primary transition-colors cursor-pointer">
+                <h4 className="font-bold text-secondary mb-2 text-sm">{item.q}</h4>
+                <p className="text-slate-500 text-sm leading-relaxed">{item.a}</p>
+              </Card>
+            ))}
+          </div>
         </div>
       </div>
-    </div>
-  )
-}
-
-/* ---------------- Helper Components ---------------- */
-
-function AnimatedInput({ label, ...props }) {
-  return (
-    <div className="group">
-      <label className="block text-sm font-semibold text-dark mb-2">
-        {label}
-      </label>
-      <input
-        {...props}
-        className="w-full px-4 py-3 border border-slate rounded-xl
-                   focus:outline-none focus:ring-2 focus:ring-primary
-                   transition-all duration-200
-                   group-hover:border-primary"
-      />
-    </div>
-  )
-}
-
-function SupportCard({ title, value, note }) {
-  return (
-    <div className="bg-white rounded-2xl shadow-md p-6 text-center hover:shadow-lg transition">
-      <div className="text-primary text-2xl font-bold mb-2">{title}</div>
-      <p className="text-dark font-semibold">{value}</p>
-      <p className="text-xs text-gray-500 mt-1">{note}</p>
     </div>
   )
 }

@@ -1,4 +1,8 @@
 import { useState } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { MapPin, Clock, Users, ChevronDown, Bus } from 'lucide-react'
+import Card from '../components/ui/Card'
+import Button from '../components/ui/Button'
 
 export default function Routes() {
   const [expandedRoute, setExpandedRoute] = useState(null)
@@ -37,90 +41,110 @@ export default function Routes() {
   ]
 
   return (
-    <div className="min-h-screen bg-gray-100 py-12">
-      <div className="max-w-7xl mx-auto px-6">
-        <h1 className="text-3xl font-bold text-dark mb-2">Bus Routes</h1>
-        <p className="text-gray-600 mb-8">Explore all available routes and schedules</p>
+    <div className="min-h-screen bg-slate-50 py-8 px-4 md:px-8 pb-24">
+      <div className="max-w-3xl mx-auto">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-secondary">Bus Routes</h1>
+          <p className="text-slate-500">Explore all available routes and schedules</p>
+        </div>
 
-        <div className="space-y-6">
-          {busRoutes.map((route) => (
-            <div key={route.id} className="bg-white rounded-xl shadow-md overflow-hidden">
-              <button
+        <div className="space-y-4">
+          {busRoutes.map((route, idx) => (
+            <Card
+              key={route.id}
+              className="!p-0 overflow-hidden border-0 shadow-md"
+              delay={idx * 0.1}
+            >
+              <div
                 onClick={() => setExpandedRoute(expandedRoute === route.id ? null : route.id)}
-                className="w-full text-left p-6 hover:bg-gray-50 transition-colors border-l-4 border-primary"
+                className="p-5 bg-white cursor-pointer hover:bg-slate-50 transition-colors relative"
               >
-                <div className="flex items-start justify-between mb-3">
-                  <div>
-                    <div className="flex items-center gap-3">
-                      <span className="text-2xl font-bold text-primary">{route.number}</span>
-                      <h3 className="text-xl font-bold text-dark">{route.name}</h3>
+                <div className="flex justify-between items-start">
+                  <div className="flex gap-4">
+                    <div className="w-12 h-12 bg-blue-50 text-primary rounded-xl flex items-center justify-center font-bold text-lg shadow-sm">
+                      {route.number.split(' ')[1]}
                     </div>
-                    <p className="text-gray-600 mt-1">
-                      {route.stops[0]} to {route.stops[route.stops.length - 1]}
-                    </p>
+                    <div>
+                      <h3 className="text-lg font-bold text-secondary">{route.name}</h3>
+                      <p className="text-sm text-slate-500 flex items-center gap-1 mt-1">
+                        <MapPin size={14} />
+                        {route.stops.length} Stops • {route.duration}
+                      </p>
+                    </div>
                   </div>
-                  <svg
-                    className={`w-6 h-6 text-gray-400 transition-transform ${
-                      expandedRoute === route.id ? 'rotate-180' : ''
-                    }`}
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
+                  <motion.div
+                    animate={{ rotate: expandedRoute === route.id ? 180 : 0 }}
+                    className="text-slate-400"
                   >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
-                  </svg>
+                    <ChevronDown />
+                  </motion.div>
                 </div>
+              </div>
 
-                <div className="flex gap-4 text-sm">
-                  <span className="text-gray-600"><strong>Distance:</strong> {route.distance}</span>
-                  <span className="text-gray-600"><strong>Duration:</strong> {route.duration}</span>
-                  <span className="text-gray-600"><strong>Buses:</strong> {route.buses}</span>
-                </div>
-              </button>
+              <AnimatePresence>
+                {expandedRoute === route.id && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    className="bg-slate-50 border-t border-slate-100"
+                  >
+                    <div className="p-5">
+                      {/* Stats */}
+                      <div className="flex gap-4 mb-6 text-sm">
+                        <div className="flex items-center gap-2 bg-white px-3 py-2 rounded-lg border border-slate-200">
+                          <MapPin size={16} className="text-primary" />
+                          <span className="font-semibold text-secondary">{route.distance}</span>
+                        </div>
+                        <div className="flex items-center gap-2 bg-white px-3 py-2 rounded-lg border border-slate-200">
+                          <Clock size={16} className="text-orange-500" />
+                          <span className="font-semibold text-secondary">{route.duration}</span>
+                        </div>
+                        <div className="flex items-center gap-2 bg-white px-3 py-2 rounded-lg border border-slate-200">
+                          <Bus size={16} className="text-emerald-500" />
+                          <span className="font-semibold text-secondary">{route.buses} Buses</span>
+                        </div>
+                      </div>
 
-              {expandedRoute === route.id && (
-                <div className="border-t border-slate px-6 py-8 bg-gray-50">
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                    <div>
-                      <h4 className="font-bold text-dark mb-4 text-lg">Route Stops</h4>
-                      <div className="space-y-3">
-                        {route.stops.map((stop, idx) => (
-                          <div key={stop} className="flex items-center gap-3">
-                            <div className="flex flex-col items-center">
-                              <div className="w-3 h-3 rounded-full bg-primary"></div>
-                              {idx < route.stops.length - 1 && (
-                                <div className="w-1 h-6 bg-slate my-1"></div>
-                              )}
-                            </div>
-                            <span className="font-medium text-dark">{stop}</span>
+                      <div className="grid md:grid-cols-2 gap-8">
+                        {/* STOPS */}
+                        <div>
+                          <h4 className="font-bold text-secondary mb-4 text-sm uppercase tracking-wide">Stops</h4>
+                          <div className="relative pl-2 space-y-6">
+                            <div className="absolute left-[11px] top-2 bottom-2 w-0.5 bg-slate-200" />
+                            {route.stops.map((stop, i) => (
+                              <div key={stop} className="relative z-10 flex items-center gap-3">
+                                <div className={`w-5 h-5 rounded-full border-2 border-white shadow-sm flex items-center justify-center ${i === 0 || i === route.stops.length - 1 ? 'bg-primary' : 'bg-slate-300'}`}>
+                                  {i === 0 || i === route.stops.length - 1 ? <div className="w-1.5 h-1.5 bg-white rounded-full" /> : null}
+                                </div>
+                                <span className={`text-sm ${i === 0 || i === route.stops.length - 1 ? 'font-bold text-secondary' : 'text-slate-600'}`}>{stop}</span>
+                              </div>
+                            ))}
                           </div>
-                        ))}
+                        </div>
+
+                        {/* SCHEDULE */}
+                        <div>
+                          <h4 className="font-bold text-secondary mb-4 text-sm uppercase tracking-wide">Schedule</h4>
+                          <div className="flex flex-wrap gap-2">
+                            {route.schedule.map((time, i) => (
+                              <div key={i} className="bg-white border border-slate-200 px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-600 hover:border-primary hover:text-primary transition-colors cursor-default">
+                                {time}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="mt-8 flex gap-3">
+                        <Button className="flex-1" icon={Users}>See Capacity</Button>
+                        <Button variant="outline" className="flex-1" icon={MapPin}>View Map</Button>
                       </div>
                     </div>
-
-                    <div>
-                      <h4 className="font-bold text-dark mb-4 text-lg">Departure Times</h4>
-                      <div className="grid grid-cols-2 gap-2">
-                        {route.schedule.map((time, idx) => (
-                          <div key={idx} className="bg-white border border-slate rounded-lg px-3 py-2 text-center">
-                            <p className="font-semibold text-dark">{time}</p>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="mt-6 flex gap-4">
-                    <button className="flex-1 bg-primary text-dark font-semibold px-6 py-3 rounded-lg hover:bg-yellow-400 transition-colors">
-                      Book from This Route
-                    </button>
-                    <button className="flex-1 border-2 border-primary text-dark font-semibold px-6 py-3 rounded-lg hover:bg-primary/10 transition-colors">
-                      View on Map
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </Card>
           ))}
         </div>
       </div>
