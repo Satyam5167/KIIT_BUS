@@ -38,7 +38,7 @@ function AppContent() {
   const showPadding = !isDriverRoutes && !isAdminRoutes;
 
   return (
-    <div className="flex flex-col min-h-screen bg-white">
+    <div className="flex flex-col min-h-[100dvh] bg-white pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]">
       <Navbar />
 
       <main className={`flex-1 ${showPadding ? 'pt-14 md:pt-16' : ''}`}>
