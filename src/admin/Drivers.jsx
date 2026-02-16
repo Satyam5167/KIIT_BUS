@@ -1,9 +1,14 @@
 import { useEffect, useState } from "react";
+import { User, Phone, Bus, Trash2, Plus, Shield } from "lucide-react";
 import API_BASE from "../apiBase";
+import Button from "../components/ui/Button";
+import Card from "../components/ui/Card";
+import Input from "../components/ui/Input";
 
 export default function Drivers() {
   const [drivers, setDrivers] = useState([]);
   const [deletingId, setDeletingId] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   const fetchDrivers = async () => {
     try {
@@ -18,6 +23,8 @@ export default function Drivers() {
     } catch (err) {
       console.error("Failed to fetch drivers:", err.message);
       setDrivers([]);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -56,91 +63,87 @@ export default function Drivers() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 py-12">
-      <div className="max-w-7xl mx-auto px-6">
-        <h1 className="text-3xl font-bold text-dark mb-2">
-          Driver Management
-        </h1>
-        <p className="text-gray-600 mb-8">
-          View and manage driver assignments
-        </p>
+    <div className="p-6 md:p-10 min-h-screen bg-slate-50/50">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-4">
+        <div>
+          <h1 className="text-3xl font-bold text-secondary tracking-tight">Driver Management</h1>
+          <p className="text-slate-500 mt-1">Manage driver accounts and assignments</p>
+        </div>
+        <Button icon={Plus} variant="primary">Add New Driver</Button>
+      </div>
 
-        <div className="bg-white rounded-xl shadow-md overflow-hidden">
-          <table className="w-full text-left">
-            <thead className="bg-gray-50 border-b">
+      <Card className="border-0 shadow-lg shadow-slate-200/50 overflow-hidden !p-0">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse">
+            <thead className="bg-slate-50 border-b border-slate-200">
               <tr>
-                <th className="px-6 py-4 text-sm text-gray-600">Driver</th>
-                <th className="px-6 py-4 text-sm text-gray-600">Phone</th>
-                <th className="px-6 py-4 text-sm text-gray-600">Vehicle</th>
-                <th className="px-6 py-4 text-sm text-gray-600">Status</th>
-                <th className="px-6 py-4 text-sm text-gray-600 text-center">
-                  Action
-                </th>
+                <th className="px-6 py-5 text-xs font-bold text-slate-500 uppercase tracking-wider">Driver Info</th>
+                <th className="px-6 py-5 text-xs font-bold text-slate-500 uppercase tracking-wider">Contact</th>
+                <th className="px-6 py-5 text-xs font-bold text-slate-500 uppercase tracking-wider">Vehicle</th>
+                <th className="px-6 py-5 text-xs font-bold text-slate-500 uppercase tracking-wider">Status</th>
+                <th className="px-6 py-5 text-xs font-bold text-slate-500 uppercase tracking-wider text-right">Actions</th>
               </tr>
             </thead>
-
-            <tbody>
-              {drivers.map((d) => (
-                <tr key={d.id} className="border-b last:border-none">
-                  <td className="px-6 py-4 font-semibold text-dark">
-                    {d.name}
-                  </td>
-
-                  <td className="px-6 py-4 text-gray-600">
-                    {d.phone || "N/A"}
-                  </td>
-
-                  <td className="px-6 py-4 text-gray-600">
-                    {d.vehicle || "Unassigned"}
-                  </td>
-
-                  <td
-                    className={`px-6 py-4 font-semibold ${
-                      d.status === "active"
-                        ? "text-green-600"
-                        : d.status === "idle"
-                        ? "text-yellow-600"
-                        : "text-red-600"
-                    }`}
-                  >
-                    {d.status === "active"
-                      ? "Active"
-                      : d.status === "idle"
-                      ? "Idle"
-                      : "Maintenance"}
-                  </td>
-
-                  <td className="px-6 py-4 text-center">
-                    <button
-                      onClick={() => handleDelete(d.id, d.name)}
-                      disabled={deletingId === d.id}
-                      className={`px-4 py-2 rounded-lg text-sm font-semibold transition
-                        ${
-                          deletingId === d.id
-                            ? "bg-gray-300 cursor-not-allowed"
-                            : "bg-red-600 text-white hover:bg-red-700"
-                        }`}
-                    >
-                      {deletingId === d.id ? "Deleting..." : "Delete"}
-                    </button>
-                  </td>
-                </tr>
-              ))}
-
-              {drivers.length === 0 && (
+            <tbody className="divide-y divide-slate-100">
+              {loading ? (
                 <tr>
-                  <td
-                    colSpan="5"
-                    className="px-6 py-4 text-center text-gray-500"
-                  >
-                    No drivers found
-                  </td>
+                  <td colSpan="5" className="px-6 py-12 text-center text-slate-400">Loading drivers...</td>
                 </tr>
+              ) : drivers.length === 0 ? (
+                <tr>
+                  <td colSpan="5" className="px-6 py-12 text-center text-slate-400">No drivers found</td>
+                </tr>
+              ) : (
+                drivers.map((d, idx) => (
+                  <tr key={d.id || d._id || idx} className="hover:bg-slate-50/50 transition-colors group">
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-full bg-blue-50 text-primary flex items-center justify-center">
+                          <User size={18} />
+                        </div>
+                        <div>
+                          <p className="font-bold text-secondary text-sm">{d.name}</p>
+                          <p className="text-xs text-slate-400">ID: #{d.id ? d.id.substring(0, 6) : 'UNK'}</p>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-2 text-sm text-slate-600">
+                        <Phone size={14} className="text-slate-400" />
+                        {d.phone || "N/A"}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-2 text-sm text-slate-600 bg-slate-100 px-3 py-1 rounded-full w-fit">
+                        <Bus size={14} className="text-slate-500" />
+                        {d.vehicle || "Unassigned"}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide ${d.status === "active" ? "bg-emerald-100 text-emerald-700" :
+                        d.status === "idle" ? "bg-amber-100 text-amber-700" : "bg-red-100 text-red-700"
+                        }`}>
+                        {d.status || "Unknown"}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-right">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleDelete(d.id, d.name)}
+                        isLoading={deletingId === d.id}
+                        className="text-slate-400 hover:text-red-600 hover:bg-red-50"
+                      >
+                        <Trash2 size={18} />
+                      </Button>
+                    </td>
+                  </tr>
+                ))
               )}
             </tbody>
           </table>
         </div>
-      </div>
+      </Card>
     </div>
   );
 }
