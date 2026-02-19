@@ -37,7 +37,7 @@ export default function MLPredictions() {
     formData.append("shuttles", shuttles);
 
     try {
-      const response = await fetch("http://localhost:3000/api/ml/phase1", {
+      const response = await fetch("http://localhost:4000/api/ml/phase1", {
         method: "POST",
         body: formData,
       });
@@ -61,7 +61,7 @@ export default function MLPredictions() {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch("http://localhost:3000/api/ml/phase2", {
+      const response = await fetch("http://localhost:4000/api/ml/phase2", {
         method: "POST",
       });
 

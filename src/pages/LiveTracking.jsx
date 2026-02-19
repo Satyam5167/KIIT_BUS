@@ -1,21 +1,122 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useLocation } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { MapPin, Navigation, Bus, ChevronRight, X } from 'lucide-react'
 import Card from '../components/ui/Card'
 import Button from '../components/ui/Button'
+import LiveMap from '../components/LiveMap'
+import { socket } from '../services/socket'
+import { fetchLiveBuses, fetchBusRoutes } from '../services/api'
 
 export default function LiveTracking() {
+  const location = useLocation()
+  const { busId } = location.state || {}
   const [selectedBus, setSelectedBus] = useState(null)
-  // Toggle for mobile view: 'map' or 'list' (defaults to map on mobile, both on desktop)
   const [viewMode, setViewMode] = useState('map')
+  const [buses, setBuses] = useState([])
+  const [filteredBuses, setFilteredBuses] = useState([])
+  const [routes, setRoutes] = useState([])
+  const [filteredRoutes, setFilteredRoutes] = useState([])
+  const [etas, setEtas] = useState({}) // Map of busId -> array of stops with ETA
 
-  const activeBuses = [
-    { id: 1, number: 'UT-201', route: 'Hostel A ↔ Campus 25', status: 'On Route', location: 'Near Hostel B' },
-    { id: 2, number: 'UT-205', route: 'Hostel C ↔ Campus 25', status: 'On Route', location: 'At Campus 25' },
-    { id: 3, number: 'UT-210', route: 'Hostel B ↔ Campus 25', status: 'At Stop', location: 'Hostel B' },
-    { id: 4, number: 'UT-215', route: 'Hostel D ↔ Campus 25', status: 'On Route', location: 'Near Library' },
-    { id: 5, number: 'UT-220', route: 'Hostel A ↔ Campus 25', status: 'Maintenance', location: 'Service Center' },
-  ]
+  useEffect(() => {
+    // Initial fetch via REST API
+    const loadInitialData = async () => {
+      try {
+        const data = await fetchLiveBuses();
+        setBuses(data);
+      } catch (err) {
+        console.error("Failed to load initial bus data", err);
+      }
+    };
+
+    loadInitialData();
+
+    const loadRoutes = async () => {
+      try {
+        const data = await fetchBusRoutes();
+        setRoutes(data || []);
+      } catch (err) {
+        console.error("Failed to load bus routes", err);
+      }
+    };
+    loadRoutes();
+
+    // Connect socket
+    socket.connect();
+
+    // Listen for events
+    socket.on('initialBusLocations', (data) => {
+      setBuses(data);
+    });
+
+    socket.on('busLocationUpdate', (updatedBus) => {
+      setBuses(prevBuses => {
+        const index = prevBuses.findIndex(b => b.busId === updatedBus.busId);
+        if (index !== -1) {
+          const newBuses = [...prevBuses];
+          newBuses[index] = { ...newBuses[index], ...updatedBus };
+          return newBuses;
+        } else {
+          return [...prevBuses, updatedBus];
+        }
+      });
+    });
+
+    socket.on('busETAUpdate', (data) => {
+      setEtas(prevEtas => ({
+        ...prevEtas,
+        [data.busId]: data.stops
+      }));
+    });
+
+    return () => {
+      socket.off('initialBusLocations');
+      socket.off('busLocationUpdate');
+      socket.off('busETAUpdate');
+      socket.disconnect();
+    };
+  }, []);
+
+  // Filter buses based on navigation state (busId)
+  useEffect(() => {
+    if (busId && buses.length > 0) {
+      const targetBus = buses.find(b => b.busId === busId);
+      if (targetBus) {
+        setFilteredBuses([targetBus]);
+        setSelectedBus(targetBus);
+      } else {
+        // If the specific bus isn't found (maybe offline), show all or handle accordingly
+        // For now, let's show all if not found, or maybe keep it empty?
+        // User asked "only want to see the information about about the selected bus"
+        // So if we can't find it, maybe show empty or all?
+        // Let's fallback to all if ID doesn't match anything, or just empty.
+        // Better UX: Show all if specific one isn't found?
+        // Let's stick to the strict request: only see selected.
+        setFilteredBuses([]);
+      }
+    } else {
+      setFilteredBuses(buses);
+    }
+  }, [busId, buses]);
+
+  // Filter routes based on visible buses
+  useEffect(() => {
+    if (routes.length > 0) {
+      if (filteredBuses.length > 0) {
+        const visibleBusIds = new Set(filteredBuses.map(b => b.busId));
+        const visible = routes.filter(r => visibleBusIds.has(r.bus_id));
+        setFilteredRoutes(visible);
+      } else {
+        // If no buses are filtered (which means no buses are visible or all are?), 
+        // wait, if filteredBuses is empty it means "no active buses" or "specific bus not found".
+        // If busId was provided but not found, filteredBuses is empty.
+        // If no busId, filteredBuses = buses.
+        // So if filteredBuses is empty, filteredRoutes should be empty.
+        setFilteredRoutes([]);
+      }
+    }
+  }, [filteredBuses, routes]);
 
   const routeStops = ['Hostel A', 'Hostel B', 'Hostel C', 'Hostel D', 'Library', 'Campus 25']
 
@@ -24,12 +125,7 @@ export default function LiveTracking() {
 
       {/* MAP CONTAINER (Full height on mobile) */}
       <div className="flex-1 relative h-full bg-slate-200">
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-          <div className="text-center opacity-30">
-            <MapPin size={64} className="mx-auto mb-2 text-slate-500" />
-            <p className="font-bold text-2xl text-slate-500">Map View</p>
-          </div>
-        </div>
+        <LiveMap buses={filteredBuses} etas={etas} routes={filteredRoutes} />
 
         {/* Mobile Floating Action Button to show list if hidden */}
         <div className="md:hidden absolute bottom-24 right-4 z-20">
@@ -62,7 +158,7 @@ export default function LiveTracking() {
         <div className="p-4 md:p-6 border-b border-slate-100 flex justify-between items-center bg-white">
           <div>
             <h2 className="text-xl font-bold text-secondary">Active Buses</h2>
-            <p className="text-sm text-slate-500 bg-white">{activeBuses.length} vehicles online</p>
+            <p className="text-sm text-slate-500 bg-white">{filteredBuses.length} vehicles online</p>
           </div>
           <button onClick={() => setViewMode('map')} className="md:hidden p-2 bg-slate-100 rounded-full">
             <X size={20} />
@@ -70,34 +166,34 @@ export default function LiveTracking() {
         </div>
 
         <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-slate-50">
-          {activeBuses.map((bus) => (
+          {filteredBuses.map((bus) => (
             <div
-              key={bus.id}
+              key={bus.busId}
               onClick={() => setSelectedBus(bus)}
               className={`
                     bg-white p-4 rounded-xl border transition-all cursor-pointer hover:shadow-md
-                    ${selectedBus?.id === bus.id ? 'border-primary ring-1 ring-primary' : 'border-slate-100'}
+                    ${selectedBus?.busId === bus.busId ? 'border-primary ring-1 ring-primary' : 'border-slate-100'}
                   `}
             >
               <div className="flex justify-between items-start mb-2">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 bg-blue-50 text-blue-600 rounded-lg flex items-center justify-center font-bold">
-                    {bus.number.split('-')[1]}
+                    <Bus size={18} />
                   </div>
                   <div>
-                    <h3 className="font-bold text-slate-800">{bus.number}</h3>
-                    <p className="text-xs text-slate-500">{bus.route}</p>
+                    <h3 className="font-bold text-slate-800">{bus.code}</h3>
+                    <p className="text-xs text-slate-500">{bus.routeId || 'Route 1'}</p>
                   </div>
                 </div>
-                <span className={`text-[10px] uppercase font-bold px-2 py-1 rounded-full ${bus.status === 'On Route' ? 'bg-emerald-100 text-emerald-700' :
-                    bus.status === 'Maintenance' ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700'
+                <span className={`text-[10px] uppercase font-bold px-2 py-1 rounded-full ${bus.speed_m_s > 0 ? 'bg-emerald-100 text-emerald-700' :
+                  'bg-amber-100 text-amber-700'
                   }`}>
-                  {bus.status}
+                  {bus.speed_m_s > 0 ? 'Moving' : 'Idle'}
                 </span>
               </div>
               <div className="flex items-center gap-2 text-xs text-slate-600 bg-slate-50 p-2 rounded-lg">
                 <MapPin size={14} className="text-slate-400" />
-                <span>{bus.location}</span>
+                <span>Last updated just now</span>
               </div>
             </div>
           ))}
@@ -111,13 +207,13 @@ export default function LiveTracking() {
             initial={{ opacity: 0, y: 100 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 100 }}
-            className="absolute bottom-[80px] left-4 right-4 md:bottom-8 md:left-8 md:right-auto md:w-96 z-40"
+            className="absolute bottom-[80px] left-4 right-4 md:bottom-8 md:left-8 md:right-auto md:w-96 z-[1000]"
           >
             <Card className="shadow-2xl border-primary/20 bg-white/95 backdrop-blur">
               <div className="flex justify-between items-start mb-4">
                 <div>
-                  <h3 className="text-lg font-bold text-secondary">Bus {selectedBus.number}</h3>
-                  <p className="text-sm text-slate-500">{selectedBus.route}</p>
+                  <h3 className="text-lg font-bold text-secondary">Bus {selectedBus.code}</h3>
+                  <p className="text-sm text-slate-500">{selectedBus.routeId || 'Route 1'}</p>
                 </div>
                 <button onClick={() => setSelectedBus(null)} className="p-1 hover:bg-slate-100 rounded-full">
                   <X size={20} className="text-slate-400" />
@@ -127,15 +223,21 @@ export default function LiveTracking() {
               <div className="flex justify-between items-center py-3 border-y border-slate-100 mb-4">
                 <div className="text-center px-4 border-r border-slate-100">
                   <p className="text-xs text-slate-400 uppercase">Speed</p>
-                  <p className="font-bold text-secondary">42 km/h</p>
+                  <p className="font-bold text-secondary">
+                    {Math.round((selectedBus.speed_m_s || 0) * 3.6)} km/h
+                  </p>
                 </div>
                 <div className="text-center px-4 border-r border-slate-100">
                   <p className="text-xs text-slate-400 uppercase">ETA</p>
-                  <p className="font-bold text-emerald-600">3 min</p>
+                  <p className="font-bold text-emerald-600">
+                    {etas[selectedBus.busId]?.[0]?.etaMinutes || '--'} min
+                  </p>
                 </div>
                 <div className="text-center px-4">
                   <p className="text-xs text-slate-400 uppercase">Next</p>
-                  <p className="font-bold text-secondary">Hostel C</p>
+                  <p className="font-bold text-secondary">
+                    {etas[selectedBus.busId]?.[0]?.stopName || 'Calculating...'}
+                  </p>
                 </div>
               </div>
 

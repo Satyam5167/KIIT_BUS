@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { MapPin, Navigation, Bus, Clock, Search } from "lucide-react";
 import API_BASE from "../apiBase";
@@ -6,6 +7,7 @@ import Button from "../components/ui/Button";
 import Card from "../components/ui/Card";
 
 export default function SelectRoute() {
+  const navigate = useNavigate();
   const [pickup, setPickup] = useState("");
   const [destination, setDestination] = useState("");
   const [showResults, setShowResults] = useState(false);
@@ -150,7 +152,11 @@ export default function SelectRoute() {
                     </div>
                   </div>
 
-                  <Button variant="outline" className="w-full border-primary/20 text-primary hover:bg-primary/5">
+                  <Button
+                    variant="outline"
+                    className="w-full border-primary/20 text-primary hover:bg-primary/5"
+                    onClick={() => navigate('/live-tracking', { state: { busId: bus.bus_id } })}
+                  >
                     Track Live Location
                   </Button>
                 </Card>

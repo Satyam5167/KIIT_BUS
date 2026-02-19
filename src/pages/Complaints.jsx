@@ -50,7 +50,7 @@ export default function Complaints() {
         category: '',
       })
 
-      setTimeout(() => setSubmitted(false), 5000)
+      setTimeout(() => setSubmitted(false), 4000)
     }, 1500)
   }
 

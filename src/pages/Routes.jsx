@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { MapPin, Clock, Users, ChevronDown, Bus } from 'lucide-react'
 import Card from '../components/ui/Card'
@@ -7,38 +7,45 @@ import Button from '../components/ui/Button'
 export default function Routes() {
   const [expandedRoute, setExpandedRoute] = useState(null)
 
-  const busRoutes = [
-    {
-      id: 1,
-      number: 'Route 1',
-      name: 'North Campus Express',
-      stops: ['Hostel A', 'Hostel B', 'Library', 'Campus 25'],
-      schedule: ['6:30 AM', '7:15 AM', '8:00 AM', '8:30 AM', '10:00 AM', '12:00 PM', '2:00 PM', '4:00 PM', '6:00 PM', '8:00 PM'],
-      distance: '4.5 km',
-      duration: '25 min',
-      buses: 3,
-    },
-    {
-      id: 2,
-      number: 'Route 2',
-      name: 'East Campus Link',
-      stops: ['Hostel C', 'Hostel D', 'Cafeteria', 'Campus 25'],
-      schedule: ['6:45 AM', '7:30 AM', '8:15 AM', '9:00 AM', '11:00 AM', '1:00 PM', '3:00 PM', '5:00 PM', '7:00 PM', '9:00 PM'],
-      distance: '5.2 km',
-      duration: '28 min',
-      buses: 2,
-    },
-    {
-      id: 3,
-      number: 'Route 3',
-      name: 'West Campus Circle',
-      stops: ['Hostel A', 'Hostel C', 'Sports Complex', 'Campus 25'],
-      schedule: ['7:00 AM', '8:00 AM', '9:00 AM', '10:30 AM', '12:30 PM', '2:30 PM', '4:30 PM', '6:30 PM'],
-      distance: '6.0 km',
-      duration: '30 min',
-      buses: 2,
-    },
-  ]
+  const [busRoutes, setBusRoutes] = useState([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const loadRoutes = async () => {
+      try {
+        const routesData = await import('../services/api').then(m => m.fetchBusRoutes());
+        // Transform backend data to UI format
+        const formattedRoutes = routesData.map(bus => {
+          const stops = bus.route.map(s => s.name);
+          const startNode = bus.route[0];
+          const endNode = bus.route[bus.route.length - 1];
+
+          // Calculate approximate distance (Haversine or simple Euclidean for now, or mock)
+          // For now, let's mock distance/duration based on stop count as we don't have real routing engine distance
+          const distance = (bus.route.length * 1.2).toFixed(1) + ' km';
+          const duration = (bus.route.length * 5) + ' min';
+
+          return {
+            id: bus.bus_id,
+            number: `Bus ${bus.bus_code}`,
+            name: `${startNode.name} - ${endNode.name}`,
+            stops: stops,
+            schedule: ['Every 30 mins', '6:00 AM - 10:00 PM'], // Placeholder as we don't have schedule in DB
+            distance: distance,
+            duration: duration,
+            buses: 1, // We are listing individual buses as routes since they are 1:1 in this system mostly
+            status: bus.status
+          };
+        });
+        setBusRoutes(formattedRoutes);
+      } catch (err) {
+        console.error("Failed to load routes", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadRoutes();
+  }, []);
 
   return (
     <div className="min-h-screen bg-slate-50 py-8 px-4 md:px-8 pb-24">

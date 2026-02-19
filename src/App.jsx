@@ -16,7 +16,7 @@ import Vehicles from './admin/Vehicles'
 import Hostels from './admin/Hostels'
 import Drivers from './admin/Drivers'
 import Reports from './admin/Reports'
-import LiveMap from './admin/LiveMap'
+import LiveMapAdmin from './admin/LiveMapAdmin'
 import MLPredictions from './admin/MLPredictions'
 import AdminLogin from './admin/AdminLogin'
 import AdminGuard from './admin/AdminGuard'
@@ -59,7 +59,7 @@ function AppContent() {
             <Route path="hostels" element={<Hostels />} />
             <Route path="drivers" element={<Drivers />} />
             <Route path="reports" element={<Reports />} />
-            <Route path="live-map" element={<LiveMap />} />
+            <Route path="live-map" element={<LiveMapAdmin />} />
             <Route path="ml" element={<MLPredictions />} />
           </Route>
 
