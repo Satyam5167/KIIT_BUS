@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { Bus, MapPin, Activity, Plus } from "lucide-react";
-import AdminNavbar from "../components/AdminNavbar";
 import API_BASE from "../apiBase";
 import Button from "../components/ui/Button";
 import Card from "../components/ui/Card";
@@ -39,8 +38,6 @@ export default function Vehicles() {
 
   return (
     <div className="min-h-screen bg-slate-50/50 p-6 md:p-10">
-      <AdminNavbar />
-
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
         <div>
           <h1 className="text-3xl font-bold text-secondary tracking-tight">Vehicle Fleet</h1>

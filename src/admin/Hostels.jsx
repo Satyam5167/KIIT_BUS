@@ -1,11 +1,9 @@
-import { Building, Users, AlertTriangle, Bus } from "lucide-react";
-import AdminNavbar from "../components/AdminNavbar";
+import { Building, Users, AlertTriangle, Bus } from "lucide-react"
 import Card from "../components/ui/Card";
 
 export default function Hostels() {
   return (
     <div className="min-h-screen bg-slate-50/50 p-6 md:p-10">
-      <AdminNavbar />
 
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-secondary tracking-tight">Hostel Demand</h1>
