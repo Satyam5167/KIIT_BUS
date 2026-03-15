@@ -14,11 +14,11 @@ export default function AdminSidebar({ isOpen, onClose }) {
                 credentials: 'include'
             });
             // Force redirect/reload to clear state
-            window.location.href = '/admin/login';
+            window.location.href = '/';
         } catch (error) {
             console.error("Logout failed", error);
             // Fallback redirect even if API fails
-            window.location.href = '/admin/login';
+            window.location.href = '/';
         }
     };
 

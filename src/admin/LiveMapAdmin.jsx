@@ -49,7 +49,6 @@ export default function LiveMapAdmin() {
 
         // Listen for events
         socket.on('initialBusLocations', (data) => {
-            console.log('Received initial locations via socket', data);
             setBuses(data);
         });
 

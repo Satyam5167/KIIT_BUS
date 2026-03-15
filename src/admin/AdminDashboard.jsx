@@ -35,12 +35,13 @@ export default function AdminDashboard() {
   }, []);
 
   return (
-    <div className="space-y-8">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold text-secondary">Dashboard Overview</h1>
-          <p className="text-slate-500 mt-1">Real-time fleet monitoring and management</p>
+    <div className="min-h-screen bg-slate-50/50 p-6 md:p-10">
+      <div className="max-w-7xl mx-auto space-y-8">
+        {/* Header */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-bold text-secondary">Dashboard Overview</h1>
+            <p className="text-slate-500 mt-1">Real-time fleet monitoring and management</p>
         </div>
         <div className="flex gap-3">
           <Button size="sm" variant="outline">Export Data</Button>
@@ -122,6 +123,8 @@ export default function AdminDashboard() {
           </div>
         </Card>
       </div>
+      </div>
     </div>
   );
 }
+

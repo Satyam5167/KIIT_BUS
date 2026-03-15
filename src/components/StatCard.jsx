@@ -16,8 +16,8 @@ export default function StatCard({ title, value, badge, icon: Icon, color = 'blu
         </div>
         {badge && (
           <span className={`text-[10px] font-bold px-2 py-1 rounded-full uppercase tracking-wide ${badge === 'LIVE' ? 'bg-green-100 text-green-700' :
-              badge === 'ALERT' ? 'bg-red-100 text-red-700' :
-                'bg-slate-100 text-slate-700'
+            badge === 'ALERT' ? 'bg-red-100 text-red-700' :
+              'bg-slate-100 text-slate-700'
             }`}>
             {badge}
           </span>
