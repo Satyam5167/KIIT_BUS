@@ -3,11 +3,12 @@ import { User, Phone, Bus, Trash2, Plus, Pencil, X, ChevronLeft, ChevronRight, S
 import API_BASE from "../apiBase";
 import Button from "../components/ui/Button";
 import Card from "../components/ui/Card";
+import { useToast } from "../components/ui/Toast";
 
 const ITEMS_PER_PAGE = 8;
 
 // ─── Add Driver Modal ─────────────────────────────────────────────────────────
-function AddDriverModal({ buses, onClose, onAdded }) {
+function AddDriverModal({ buses, onClose, onAdded, toast }) {
   const [form, setForm] = useState({ name: "", email: "", phone: "", password: "", busId: "" });
   const [showPassword, setShowPassword] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -43,6 +44,7 @@ function AddDriverModal({ buses, onClose, onAdded }) {
         bus_id: form.busId || null,
         status: "active",
       });
+      toast.success(`Driver "${form.name.trim()}" added successfully`);
       onClose();
     } catch (err) {
       setError(err.message);
@@ -153,7 +155,7 @@ function AddDriverModal({ buses, onClose, onAdded }) {
 
 
 // ─── Edit Modal ───────────────────────────────────────────────────────────────
-function EditDriverModal({ driver, buses, onClose, onUpdated, onDeleted }) {
+function EditDriverModal({ driver, buses, onClose, onUpdated, onDeleted, toast }) {
   const [name, setName] = useState(driver.name || "");
   const [busId, setBusId] = useState(driver.bus_id || "");
   const [saving, setSaving] = useState(false);
@@ -177,6 +179,7 @@ function EditDriverModal({ driver, buses, onClose, onUpdated, onDeleted }) {
         throw new Error(data.message || "Update failed");
       }
       onUpdated(driver.id, name.trim(), busId, buses.find(b => b.id === Number(busId))?.code);
+      toast.success("Driver updated successfully");
       onClose();
     } catch (err) {
       setError(err.message);
@@ -198,6 +201,7 @@ function EditDriverModal({ driver, buses, onClose, onUpdated, onDeleted }) {
         throw new Error(data.message || "Delete failed");
       }
       onDeleted(driver.id);
+      toast.success("Driver removed successfully");
       onClose();
     } catch (err) {
       setError(err.message);
@@ -319,6 +323,7 @@ function EditDriverModal({ driver, buses, onClose, onUpdated, onDeleted }) {
 
 // ─── Main Component ──────────────────────────────────────────────────────────
 export default function Drivers() {
+  const toast = useToast();
   const [drivers, setDrivers] = useState([]);
   const [buses, setBuses] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -627,6 +632,7 @@ export default function Drivers() {
           onClose={() => setEditingDriver(null)}
           onUpdated={handleUpdated}
           onDeleted={handleDeleted}
+          toast={toast}
         />
       )}
 
@@ -635,6 +641,7 @@ export default function Drivers() {
           buses={buses}
           onClose={() => setShowAddModal(false)}
           onAdded={handleAdded}
+          toast={toast}
         />
       )}
     </div>

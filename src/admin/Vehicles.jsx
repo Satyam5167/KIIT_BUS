@@ -3,8 +3,10 @@ import { Bus, MapPin, Activity, Plus, Search, ChevronLeft, ChevronRight } from "
 import API_BASE from "../apiBase";
 import Button from "../components/ui/Button";
 import Card from "../components/ui/Card";
+import { useToast } from "../components/ui/Toast";
 
 export default function Vehicles() {
+  const toast = useToast();
   const [buses, setBuses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(null);
@@ -82,9 +84,10 @@ export default function Vehicles() {
       setBuses(prev => prev.map(bus => 
         bus.bus_id === busId ? { ...bus, status: newStatus } : bus
       ));
+      toast.success("Bus status updated");
     } catch (err) {
       console.error("Error updating status:", err);
-      alert("Failed to update status. Please try again.");
+      toast.error("Failed to update status. Please try again.");
     } finally {
       setUpdating(null);
     }
@@ -101,9 +104,8 @@ export default function Vehicles() {
   };
 
   const handleSaveEdit = async () => {
-    // Basic validation
     if (editForm.source && editForm.destination && editForm.source === editForm.destination) {
-      alert("Source and Destination cannot be the same.");
+      toast.error("Source and destination cannot be the same.");
       return;
     }
 
@@ -140,12 +142,12 @@ export default function Vehicles() {
         if (!resRoute.ok) throw new Error(d.message || "Failed to update route");
       }
 
-      // Refresh list after edits
       await fetchBusRoutes();
       setEditingBus(null);
+      toast.success("Vehicle updated successfully");
     } catch (err) {
       console.error(err);
-      alert(err.message);
+      toast.error(err.message || "Failed to save changes");
     } finally {
       setUpdating(null);
     }
@@ -153,11 +155,11 @@ export default function Vehicles() {
 
   const handleSaveAdd = async () => {
     if (!addForm.code.trim()) {
-      alert("Vehicle code is required.");
+      toast.error("Vehicle code is required.");
       return;
     }
     if (addForm.source && addForm.destination && addForm.source === addForm.destination) {
-      alert("Source and Destination cannot be the same.");
+      toast.error("Source and destination cannot be the same.");
       return;
     }
 
@@ -177,13 +179,13 @@ export default function Vehicles() {
       const d = await res.json();
       if (!res.ok) throw new Error(d.message || "Failed to add vehicle");
 
-      // Refresh list after edits
       await fetchBusRoutes();
       setAddingBus(false);
       setAddForm({ code: '', status: 'idle', source: '', destination: '' });
+      toast.success("Vehicle added successfully");
     } catch (err) {
       console.error(err);
-      alert(err.message);
+      toast.error(err.message || "Failed to add vehicle");
     } finally {
       setUpdating(null);
     }
